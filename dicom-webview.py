@@ -9,6 +9,7 @@ import base64
 import itertools
 from enum import Enum
 import sys
+import lisa_segmentation as ls
 
 if sys.version_info.major == 2:
     import StringIO
@@ -98,6 +99,9 @@ def push_segm(plane, slice_n):
         # indexing modified images
         segm_images_index[plane_n].append(dims[plane_n] - slice_n - 1)
 
+        # editiong data for segmentation
+        ls.push_segmentation(pixel_array, dims[plane_n] - slice_n - 1, plane)
+
         return 'image pushed in memory array'
     else:
         return 'no image received'
@@ -174,6 +178,7 @@ if __name__ == '__main__':
     images = datap["data3d"]
     dims = images.shape
     segm_images = np.empty(shape=[dims[0], dims[1], dims[2], 4], dtype=np.uint8)
+    ls.create_data(dims[0], dims[1], dims[2], datap["data3d"])
 
     for dirName, subdirList, fileList in os.walk(os.path.join(APP_PATH, SEGM_IMAGE_PATH)):
         for filename in fileList:
