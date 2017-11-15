@@ -1,16 +1,34 @@
 import numpy as np
 
 data = {}
+rgba_array = []
 # dictionary of labels: {"label value": [coordinates in rgb]}
 dict_of_labels = {0: [0, 0, 0, 0], # nothing
+                  1: [150, 150, 0, 127], # 1st half of liver
+                  2: [0, 150, 150, 127], # 2nd half of liver
+                  3: [150, 150, 150, 127], # portal vein
                   10: [0, 255, 0, 127], # liver
                   20: [255, 0, 0, 127], # heart
                   30: [255, 200, 0, 127]} # spleen
 
 # creating useble data for LISA
 def create_data(length_x, length_y, length_z, data3d):
+    rgba_array = np.empty((length_x, length_y, length_z))
     data["segmentation"] = np.zeros((length_x, length_y, length_z))
     data["data3d"] = data3d
+
+# from LISA data to RGBA
+def data_to_rgba():
+    length_x = len(rgba_array)
+    length_y = len(rgba_array[0])
+    length_z = len(rgba_array[0][0])
+    for i in range(0, length_x):
+        for j in range(0, length_y):
+            for k in range(0, length_z):
+                for key, val in dict_of_labels.items():
+                    if key == data["segmentation"][i][j][k]:
+                        rgba_array[i][j][k] = key
+    return rgba_array
 
 # editing segmentation data for LISA and pushing them to segmentation
 def push_segmentation(pixel_array, index, plane):
@@ -25,14 +43,9 @@ def push_segmentation(pixel_array, index, plane):
     # TODO zavolat segmentaci v lise
     
     # returning RGBA
-    length_x = len(data["segmentation"])
-    length_y = len(data["segmentation"][0])
-    length_z = len(data["segmentation"][0][0])
-    rgba_array = np.empty((length_x, length_y, length_z))
-    # for i in range(0, length_x):
-    #     for j in range(0, length_y):
-    #         for k in range(0, length_z):
-    #             for key, val in dict_of_labels.items():
-    #                 if key == data["segmentation"][i][j][k]:
-    #                     rgba_array[i][j][k] = key
+    # data_to_rgba()
     return rgba_array
+
+#def push_resection_portal_vein(seeds):
+#    data = resection_portal_vein_new(data, interactivity=False, seeds=seeds, organ_label=10, vein_label=3)
+#    # nutno upravit předchozí funkci / napsat novou - vizualizace
