@@ -120,7 +120,8 @@ def push_segm(plane, slice_n):
 def semiautomatic_segmentation():
     #
 
-    # semiautomatic_segmentation_algorithm(data3d, voxelsize_mm, seeds)
+    if semiautomatic_segmentation_algorithm is not None:
+        semiautomatic_segmentation_algorithm(data3d, voxelsize_mm, seeds)
     count = 0
     for plane in range(3):
         img_path = os.path.join(APP_PATH, SEGM_IMAGE_PATH)
