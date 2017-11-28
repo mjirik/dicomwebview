@@ -5,8 +5,10 @@ rgba_array = []
 # dictionary of labels: {"label value": [coordinates in rgb]}
 dict_of_labels = {0: [0, 0, 0, 0], # nothing
                   1: [150, 150, 0, 127], # 1st half of liver
-                  2: [0, 150, 150, 127], # 2nd half of liver
-                  3: [150, 150, 150, 127], # portal vein
+                  3: [0, 150, 150, 127], # 2nd half of liver
+                  2: [150, 0, 0, 127], # portal vein
+                  4: [], # 2nd half of pv
+                  5: [150, 0, 150, 127], # seeds
                   10: [0, 255, 0, 127], # liver
                   20: [255, 0, 0, 127], # heart
                   30: [255, 200, 0, 127]} # spleen
@@ -39,8 +41,17 @@ def push_segmentation(pixel_array, index, plane):
             for k, v in dict_of_labels.items():
                 if v[0] == pixel_array[i][j][0] and v[1] == pixel_array[i][j][1] and v[2] == pixel_array[i][j][2]:
                     value = k
-            data["segmentation"][index][i][j] = value
+                if plane == 0:
+                    data["segmentation"][index][i][j] = value
+                elif plane ==  1:
+                    data["segmentation"][i][index][j] = value
+                else:
+                    data["segmentation"][i][j][index] = value
+
     # TODO zavolat segmentaci v lise
+    ''' problém: když uživatel označuje vícero obrázků pro segmentaci -> tato funkce se volá vícekrát (resp. tolikrát, na kolika obrázcích jsou označeny labely)
+        ... nelze zjistit, kolik obrázků bylo označováno ... nejlepší řešení: metoda push by se volala okamžitě, jakmile by uživatel nakreslil něco do obrázku,
+        segmentace by se volala, jakmile by stisknul checkbox '''
     
     # returning RGBA
     # data_to_rgba()
@@ -48,4 +59,4 @@ def push_segmentation(pixel_array, index, plane):
 
 #def push_resection_portal_vein(seeds):
 #    data = resection_portal_vein_new(data, interactivity=False, seeds=seeds, organ_label=10, vein_label=3)
-#    # nutno upravit předchozí funkci / napsat novou - vizualizace
+#    # nutno upravit předchozí funkci / napsat novou - smazání vizualizace
