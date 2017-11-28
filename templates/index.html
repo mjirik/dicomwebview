@@ -23,6 +23,7 @@
                    min="300"
                    max="1200"/>
             <button id="saveSegmentation" @click="saveSegmentation"> Save Segmentation Permanently </button>
+            <button id="semiautomaticSegmentation" @click="semiautomaticSegmentation"> Semiautomatic Segmentation</button>
             <component is="colorSelector" @colorchange="changeColor"></component>
         </div>
         <div id="slices">
@@ -330,7 +331,7 @@
             fetchSegmImage() {
                 if(this.z!=1) return
                 let self = this
-                fetch(`api/0/stored_dicom/get_segm_image/${this.planeName}/${this.sliceNumber}`)
+                fetch(`api/0/stored_dicom/get_segm_image/${this.planeName}/${this.sliceNumber}?`+encodeURI(new Date().getTime()))
                     .then((res) => {
                         if (!res.ok) {
                             console.warn(res)
@@ -646,6 +647,13 @@
             saveSegmentation(){
                 let self = this
                 $.post('/api/0/segmentation/saveToDisk', {},
+                    function (data, status) {
+                    alert(status + ": "+ data)
+                })
+            },
+            semiautomaticSegmentation(){
+                let self = this
+                $.post('/api/0/segmentation/semiautomaticSegmentation', {},
                     function (data, status) {
                     alert(status + ": "+ data)
                 })

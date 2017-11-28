@@ -1,3 +1,8 @@
+import logging
+
+logger = logging.getLogger(__name__)
+import logging.handlers
+
 from flask import Flask, render_template, request, send_file, session
 
 import io3d
@@ -27,6 +32,7 @@ max_intensity = 255
 min_intensity = 0
 segm_images = np.empty(1)
 segm_images_index = [[], [], []]
+semiautomatic_segmentation_algorithm = None
 
 APP_PATH = os.path.dirname(__file__)
 DICOM_PATH = 'DICOM_test/'
@@ -52,6 +58,7 @@ def get_slice(plane, slice_n):
     if not issubclass(type(plane_n), int):
         plane_n = plane_n.value
 
+    print("plane/slice n ", plane_n, slice_n)
     image = create_image_slice(plane_n, dims[plane_n] - slice_n - 1)
     return send_file(image,
                      attachment_filename=plane + str(slice_n) + '.png',
@@ -60,6 +67,8 @@ def get_slice(plane, slice_n):
 
 @app.route('/api/0/stored_dicom/get_segm_image/<string:plane>/<int:slice_n>', methods=['GET'])
 def get_segm_image(plane, slice_n):
+    logger.debug("get_segm_imgae aslkdfladsfkj")
+    print("skldjfaskfjh")
     plane_n = getattr(Planes, plane.upper())
     if not issubclass(type(plane_n), int):
         plane_n = plane_n.value
@@ -73,6 +82,7 @@ def get_segm_image(plane, slice_n):
 def push_segm(plane, slice_n):
     files = request.values
     if files.__len__() > 0:
+        print("push_segm ")
         plane_n = getattr(Planes, plane.upper())
         if not issubclass(type(plane_n), int):
             plane_n = plane_n.value
@@ -106,6 +116,21 @@ def push_segm(plane, slice_n):
     else:
         return 'no image received'
 
+@app.route('/api/0/segmentation/semiautomaticSegmentation', methods=['POST'])
+def semiautomatic_segmentation():
+    #
+
+    if semiautomatic_segmentation_algorithm is not None:
+        semiautomatic_segmentation_algorithm(data3d, voxelsize_mm, seeds)
+    count = 0
+    for plane in range(3):
+        img_path = os.path.join(APP_PATH, SEGM_IMAGE_PATH)
+        iterable = (save_image(i, plane, img_path) for i in segm_images_index[plane])
+        count += len(segm_images_index[plane])
+        np.fromiter(iterable, int, count=len(segm_images_index[plane]))
+        segm_images_index[plane] = []
+
+    return "saved " + str(count) + " images"
 
 @app.route('/api/0/segmentation/saveToDisk', methods=['POST'])
 def save_segm_image_disk():
@@ -143,6 +168,7 @@ def create_segm_image(plane, slice_n):
 
 
 def create_image_slice(plane, slice_n):
+    print(plane, slice_n)
     image_pixel = images.take(slice_n, plane).astype(float)
 
     if sys.version_info.major == 2:
