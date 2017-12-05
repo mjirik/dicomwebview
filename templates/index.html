@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="utf-8">
@@ -72,7 +72,7 @@
                min="0"
                :max="plane.z"/>
         <span>zoom: ${zoom}</span>
-        <input :id="plane.name+'-zoomSlider'" type="range" v-model="scaled_height"
+        <input :id="plane.name+'-zoomSlider'" type="range" v-model="scaled_model"
                :min="plane.y"
                :max="plane.y*3"
                :step="plane.y/2"/>
@@ -445,7 +445,7 @@
                 'canvas': null,
                 'display_canv': null,
                 'ctx': null,
-                'scaled_height': this.plane.y,
+                'scaled_model': this.scaled_model,
                 'draw_enabled': false,
                 'cursor': {
                     'x': 0,
@@ -461,11 +461,15 @@
         },
         computed: {
             zoom() {
-                return this.scaled_height / this.plane.y
+                return 1
             },
             scaled_width() {
-                let scaled_width = Math.floor(this.plane.x * this.plane.ratio * this.zoom)
+                let scaled_width = Math.floor(this.plane.x * this.plane.ratio_width * this.zoom)
                 return scaled_width
+            },
+            scaled_height() {
+                let scaled_height = Math.floor(this.plane.y * this.plane.ratio_height * this.zoom)
+                return scaled_height
             }
         },
         mounted() {
@@ -504,8 +508,8 @@
                 }
             },
             getSlice() {
-                let x = Math.floor(this.cursor.x / (this.zoom * this.plane.ratio))
-                let y = this.plane.y - Math.floor(this.cursor.y / (this.zoom)) - 1
+                let x = Math.floor(this.cursor.x / (this.zoom * this.plane.ratio_width))
+                let y = this.plane.y - Math.floor(this.cursor.y / (this.zoom * this.plane.ratio_height)) - 1
                 slicesBus.$emit('changeSlice', this.plane.name, x, y)
             },
             changeSlice(planeName, x, y) {
@@ -579,7 +583,7 @@
                 context.strokeStyle = "yellow"
                 context.beginPath()
 
-                x = this.plane_line_x * (this.zoom * this.plane.ratio)
+                x = this.plane_line_x * (this.zoom * this.plane.ratio_width)
                 xTo = x
                 yTo = this.scaled_height
 
@@ -587,7 +591,7 @@
                 context.lineTo(xTo, yTo)
                 context.stroke()
 
-                y = this.plane_line_y * this.zoom
+                y = this.plane_line_y * (this.zoom * this.plane.ratio_height)
                 yTo = y
                 x = 0
                 xTo = this.scaled_width
@@ -673,7 +677,8 @@
                     z: {{ session['dimension'][0] - 1}},
                     x: {{ session['dimension'][1]}},
                     y: {{ session['dimension'][2]}},
-                    ratio: {{ session['ratios'][0] }}
+                    ratio_width: {{ session['ratios'][1] / session['ratios'][2]}},
+                    ratio_height: {{ session['ratios'][2] / session['ratios'][2]}}
                 },
                 {
                     id: 2,
@@ -681,7 +686,8 @@
                     z: {{ session['dimension'][2] - 1}},
                     x: {{ session['dimension'][2]}},
                     y: {{ session['dimension'][0]}},
-                    ratio: {{ session['ratios'][2] }}
+                    ratio_width: {{ session['ratios'][2] / session['ratios'][2]}},
+                    ratio_height: {{ session['ratios'][0] / session['ratios'][2]}}
 
                 },
                 {
@@ -690,7 +696,8 @@
                     z: {{ session['dimension'][1] - 1}},
                     x: {{ session['dimension'][1]}},
                     y: {{ session['dimension'][0]}},
-                    ratio: {{ session['ratios'][1] }}
+                    ratio_width: {{ session['ratios'][1] / session['ratios'][2]}},
+                    ratio_height: {{ session['ratios'][0] / session['ratios'][2]}}
                 }
             ]
         },

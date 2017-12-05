@@ -112,6 +112,7 @@ def push_segm(plane, slice_n):
         # editiong data for segmentation
         ls.push_segmentation(pixel_array, dims[plane_n] - slice_n - 1, plane)
 
+        print("done ")
         return 'image pushed in memory array'
     else:
         return 'no image received'
@@ -119,7 +120,7 @@ def push_segm(plane, slice_n):
 @app.route('/api/0/segmentation/semiautomaticSegmentation', methods=['POST'])
 def semiautomatic_segmentation():
     #
-
+    data3d, voxelsize_mm, seeds = ls.get_liver()
     if semiautomatic_segmentation_algorithm is not None:
         semiautomatic_segmentation_algorithm(data3d, voxelsize_mm, seeds)
     count = 0
@@ -205,7 +206,7 @@ if __name__ == '__main__':
     images = datap["data3d"]
     dims = images.shape
     segm_images = np.empty(shape=[dims[0], dims[1], dims[2], 4], dtype=np.uint8)
-    ls.create_data(dims[0], dims[1], dims[2], datap["data3d"])
+    ls.create_data(dims[0], dims[1], dims[2], datap["data3d"], datap["voxelsize_mm"])
 
     for dirName, subdirList, fileList in os.walk(os.path.join(APP_PATH, SEGM_IMAGE_PATH)):
         for filename in fileList:
